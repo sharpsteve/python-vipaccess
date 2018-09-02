@@ -76,10 +76,8 @@ def provision(p, args):
         print('    oathtool -d6 -b {}    {}  # 6-digit code'''.format(mode, otp_secret_b32))
         print('    oathtool -d6 -b {} -v {}  # ... with extra information'''.format(mode, otp_secret_b32))
     else:
-        assert otp_token['type']=='totp'
-        assert otp_token['digits']==6
-        assert otp_token['algorithm']=='sha1'
-        assert otp_token['period']==30
+        if otp_token['type']!='totp' or otp_token['digits']!=6 or otp_token['algorithm']=='sha1' or otp_token['period']==30:
+            p.error('Can only save 6-digit, 30-second, SHA1-based TOTP tokens; try with --print')
         os.umask(0o077) # stoken does this too (security)
         with open(os.path.expanduser(args.dotfile), EXCL_WRITE) as dotfile:
             dotfile.write('version 1\n')
