@@ -34,7 +34,7 @@ import requests
 from Crypto.Cipher import AES
 from Crypto.Random import random
 from lxml import etree
-from oath import totp
+from oath import totp, hotp
 
 
 PROVISIONING_URL = 'https://services.vip.symantec.com/prov'
@@ -139,7 +139,14 @@ def get_token_from_response(response_xml):
         token['cipher'] = base64.b64decode(data.find('v:Cipher', ns).text)
         token['digest'] = base64.b64decode(data.find('v:Digest', ns).text)
         token['expiry'] = expiry.text
-        token['period'] = int(usage.find('v:TimeStep', ns).text)
+        if usage.find('v:TimeStep', ns) != None:
+            token['type'] = 'totp'
+            token['period'] = int(usage.find('v:TimeStep', ns).text)
+        elif usage.find('v:Counter', ns) != None:
+            token['type'] = 'hotp'
+            token['counter'] = int(usage.find('v:Counter', ns).text)
+        else:
+            raise RuntimeError('token contains neither TOTP (TimeStep) nor HOTP (Counter) marker')
 
         algorithm = usage.find('v:AI', ns).attrib['type'].split('-')
         if len(algorithm)==4 and algorithm[0]=='HMAC' and algorithm[2]=='TRUNC' and algorithm[3].endswith('DIGITS'):
@@ -167,7 +174,7 @@ def decrypt_key(token_iv, token_cipher):
 def generate_otp_uri(token, secret):
     '''Generate the OTP URI.'''
     token_parameters = {}
-    token_parameters['otp_type'] = urllib.quote('totp')
+    t = token_parameters['otp_type'] = token.get('type', 'totp')
     token_parameters['app_name'] = urllib.quote('VIP Access')
     token_parameters['account_name'] = urllib.quote(token.get('id', 'Unknown'))
     secret = base64.b32encode(secret).upper()
@@ -175,17 +182,22 @@ def generate_otp_uri(token, secret):
         dict(
             secret=secret,
             digits=token.get('digits', 6),
-            period=token.get('period', 30),
             algorithm=token.get('algorithm', 'sha1'),
-            issuer='Symantec'
+            issuer='Symantec',
+            **{'period' if t=='totp' else 'counter':
+               token['period' if t=='totp' else 'counter']}
             )
         )
 
     return 'otpauth://%(otp_type)s/%(app_name)s:%(account_name)s?%(parameters)s' % token_parameters
 
-def check_token(token_id, secret, session=requests):
+def check_token(token_id, token, secret, session=requests):
     '''Check the validity of the generated token.'''
-    otp = totp(binascii.b2a_hex(secret).decode('utf-8'))
+    if token.get('type', 'totp')=='totp':
+        otp = totp(binascii.b2a_hex(secret).decode('utf-8'))
+    else:
+        otp = hotp(binascii.b2a_hex(secret).decode('utf-8'), token['counter'])
+        token['counter'] += 1
     test_url = 'https://vip.symantec.com/otpCheck'
     token_check = session.post(
         TEST_URL,

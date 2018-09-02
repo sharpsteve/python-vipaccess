@@ -54,21 +54,29 @@ def provision(p, args):
     otp_secret = vp.decrypt_key(otp_token['iv'], otp_token['cipher'])
     otp_secret_b32 = base64.b32encode(otp_secret).upper().decode('ascii')
     print("Checking token...")
-    if not vp.check_token(otp_token['id'], otp_secret, session):
+    if not vp.check_token(otp_token['id'], otp_token, otp_secret, session):
         print("WARNING: Something went wrong--the token could not be validated.\n",
               "    (check your system time; it differs from the server's by %d seconds)\n" % otp_token['timeskew'],
               file=sys.stderr)
 
     if args.print:
         otp_uri = vp.generate_otp_uri(otp_token, otp_secret)
+        if otp_token['type'] == 'hotp':
+            mode = '--hotp -c {}'.format(otp_token['counter'])
+        elif otp_token['type'] == 'totp':
+            if otp_token['period'] != 30:
+                mode = '--totp -s {}'.format(otp_token['period'])
+            else:
+                mode = '--totp'
         print('Credential created successfully:\n\t' + otp_uri)
         print("This credential expires on this date: " + otp_token['expiry'])
         print('\nYou will need the ID to register this credential: ' + otp_token['id'])
         print('\nYou can use oathtool to generate the same OTP codes')
         print('as would be produced by the official VIP Access apps:\n')
-        print('    oathtool -d6 -b --totp    {}  # 6-digit code'''.format(otp_secret_b32))
-        print('    oathtool -d6 -b --totp -v {}  # ... with extra information'''.format(otp_secret_b32))
+        print('    oathtool -d6 -b {}    {}  # 6-digit code'''.format(mode, otp_secret_b32))
+        print('    oathtool -d6 -b {} -v {}  # ... with extra information'''.format(mode, otp_secret_b32))
     else:
+        assert otp_token['type']=='totp'
         assert otp_token['digits']==6
         assert otp_token['algorithm']=='sha1'
         assert otp_token['period']==30
