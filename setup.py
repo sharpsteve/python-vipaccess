@@ -29,11 +29,10 @@ setup(
     keywords='development',
     packages=['vipaccess'],
     install_requires=[
-        'lxml',
-        'oath',
-        'pycryptodome',
+        'lxml==4.2.5',
+        'oath>=1.4.1',
+        'pycryptodome==3.6.6',
         'requests',
-        'oath',
     ],
     entry_points={
         'console_scripts': [
