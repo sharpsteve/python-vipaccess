@@ -3,9 +3,20 @@ python-vipaccess
 
 [![Build Status](https://api.travis-ci.org/dlenski/python-vipaccess.png)](https://travis-ci.org/dlenski/python-vipaccess)
 
-This is a fork of [@cyrozap](https://github.com/cyrozap)'s [`python-vipaccess`](https://github.com/dlenski/python-vipaccess).
+Table of Contents
+=================
 
-Main differences:
+* [python-vipaccess](#python-vipaccess)
+* [Table of Contents](#table-of-contents)
+   * [Intro](#intro)
+   * [Dependencies](#dependencies)
+   * [Manual](#manual)
+   * [Usage](#usage)
+      * [Provisioning a new VIP Access credential](#provisioning-a-new-vip-access-credential)
+      * [Display a QR code to register your credential with mobile TOTP apps](#display-a-qr-code-to-register-your-credential-with-mobile-totp-apps)
+      * [Generating access codes using an existing credential](#generating-access-codes-using-an-existing-credential)
+
+This is a fork of [**`cyrozap/python-vipaccess`**](https://github.com/dlenski/python-vipaccess). Main differences:
 
 - No dependency on `qrcode` or `image` libraries; you can easily use
   external tools such as [`qrencode`](https://github.com/fukuchi/libqrencode)
@@ -47,7 +58,7 @@ new token.
 Dependencies
 ------------
 
--  Python 2.7, 3.3, 3.4, 3.5, 3.6
+-  Python 2.7 or 3.3+
 -  [`lxml`](https://pypi.python.org/pypi/lxml/4.2.5)
 -  [`oath`](https://pypi.python.org/pypi/oath/1.4.1)
 -  [`pycryptodome`](https://pypi.python.org/pypi/pycryptodome/3.6.6)
@@ -56,7 +67,7 @@ Dependencies
 If you have `pip` installed on your system, you can easily install the dependencies by running
 `pip install -r requirements.txt` in the project root directory.
 
-To install `pip` see the `pip` installation documentation [here](https://pip.pypa.io/en/stable/installing/).
+To install `pip` see the [`pip` installation documentation](https://pip.pypa.io/en/stable/installing/).
 
 Manual
 ------
@@ -149,16 +160,19 @@ id VSST12345678
 expiry 2019-01-15T12:00:00.000Z
 ```
 
-### Using qrencode to register your credential with TOTP apps (e.g. Authy)
+### Display a QR code to register your credential with mobile TOTP apps
 
-Once you generate a token with `vipaccess provision -p`, use the `otpauth` URL
-to generate the QR code:
+Once you generate a token with `vipaccess provision -p`, use
+[`qrencode`](https://fukuchi.org/works/qrencode/manual/index.html) to display
+the `otpauth://` URL as a QR code:
 
 ```
 qrencode -t ANSI256 'otpauth://totp/VIP%20Access:VSSTXXXX?secret=YYYY&issuer=Symantec'
 ```
 
-Scan the code into your TOTP generating app, like Authy.
+Scan the code into your TOTP generating app,
+like [FreeOTP](https://freeotp.github.io/) or
+[Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2).
 
 ### Generating access codes using an existing credential
 
