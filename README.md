@@ -10,7 +10,8 @@ Table of Contents
 * [Table of Contents](#table-of-contents)
    * [Intro](#intro)
    * [Dependencies](#dependencies)
-   * [Manual](#manual)
+   * [Installation](#installation)
+      * [Docker](#docker)
    * [Usage](#usage)
       * [Provisioning a new VIP Access credential](#provisioning-a-new-vip-access-credential)
       * [Display a QR code to register your credential with mobile TOTP apps](#display-a-qr-code-to-register-your-credential-with-mobile-totp-apps)
@@ -69,11 +70,27 @@ If you have `pip` installed on your system, you can easily install the dependenc
 
 To install `pip` see the [`pip` installation documentation](https://pip.pypa.io/en/stable/installing/).
 
-Manual
-------
+Installation
+------------
 
-If you have Docker installed, you can simply use the
-[Docker image](https://hub.docker.com/r/kayvan/vipaccess/) to run
+Install with `pip3` to automatically fetch Python dependencies. (Note that on most systems, `pip3` invokes
+the Python 3.x version, while `pip` invokes the Python 2.7 version; Python 2.7 is still supported, but not
+recommended because it's nearing obsolescence.)
+
+```
+# Install latest development version
+$ pip3 install https://github.com/dlenski/python-vipaccess/archive/HEAD.zip
+
+# Install a tagged release
+# (replace "RELEASE" with one of the tag/release version numbers on the "Releases" page)
+$ pip3 install https://github.com/dlenski/python-vipaccess/archive/RELEASE.zip
+```
+
+Docker
+======
+
+If you have Docker installed, you can use
+[this prebuilt Docker image](https://hub.docker.com/r/kayvan/vipaccess/) to run
 the `vipaccess` tool:
 
 ```
@@ -91,17 +108,6 @@ And with your generated secret, use the `show` command like this:
 docker run --rm kayvan/vipaccess show -s YOURSECRET
 935163
 ```
-
-Alternatively, you can build it:
-
-1. Check out this repository by running
-   ``git clone https://github.com/dlenski/python-vipaccess.git``
-2. Switch to the ``python-vipaccess`` directory by running
-   ``cd python-vipaccess``
-3. Install the ``vipaccess`` module
-
-   -  With [pip](https://en.wikipedia.org/wiki/Pip_(package_manager)): ``pip install .``
-   -  Without pip: ``python setup.py install``
 
 Usage
 -----
