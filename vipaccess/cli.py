@@ -135,6 +135,7 @@ def main():
             setattr(namespace, 'dotfile', None)
 
     sp = p.add_subparsers(dest='cmd')
+
     pprov = sp.add_parser('provision', help='Provision a new VIP Access credential')
     pprov.set_defaults(func=provision)
     m = pprov.add_mutually_exclusive_group()
@@ -155,19 +156,18 @@ def main():
                    help="Specify the token secret on the command line (base32 encoded)")
     m.add_argument('-f', '--dotfile', type=PathType(exists=True), default=os.path.expanduser('~/.vipaccess'),
                    help="File in which the credential is stored (default ~/.vipaccess)")
-    pshow.add_argument('-i', '--issuer', default="Symantec", action='store',
-                       help="Specify the issuer name to use (default: Symantec)")
     pshow.add_argument('-v', '--verbose', action='store_true')
     pshow.set_defaults(func=show)
 
-    pshow = sp.add_parser('uri', help="Export the credential as a URI (otpauth://)")
-    m = pshow.add_mutually_exclusive_group()
+    puri = sp.add_parser('uri', help="Export the credential as a URI (otpauth://)")
+    m = puri.add_mutually_exclusive_group()
     m.add_argument('-s', '--secret',
                    help="Specify the token secret on the command line (base32 encoded)")
     m.add_argument('-f', '--dotfile', type=PathType(exists=True), default=os.path.expanduser('~/.vipaccess'),
                    help="File in which the credential is stored (default ~/.vipaccess)")
-    pshow.add_argument('-v', '--verbose', action='store_true')
-    pshow.set_defaults(func=uri)
+    puri.add_argument('-i', '--issuer', default="Symantec", action='store',
+                       help="Specify the issuer name to use (default: Symantec)")
+    puri.set_defaults(func=uri)
 
     p.set_default_subparser('show')
     args = p.parse_args()
