@@ -86,8 +86,7 @@ $ pip3 install https://github.com/dlenski/python-vipaccess/archive/HEAD.zip
 $ pip3 install https://github.com/dlenski/python-vipaccess/archive/RELEASE.zip
 ```
 
-Docker
-======
+### Docker
 
 If you have Docker installed, you can use
 [this prebuilt Docker image](https://hub.docker.com/r/kayvan/vipaccess/) to run
