@@ -186,20 +186,8 @@ def generate_otp_uri(token, secret, issuer='Symantec'):
 def check_token(token_id, secret, session=requests):
     '''Check the validity of the generated token.'''
     otp = totp(binascii.b2a_hex(secret).decode('utf-8'))
-    test_url = 'https://vip.symantec.com/otpCheck'
-    token_check = session.post(
-        TEST_URL,
-        data={
-            'cr1':otp[0],
-            'cr2':otp[1],
-            'cr3':otp[2],
-            'cr4':otp[3],
-            'cr5':otp[4],
-            'cr6':otp[5],
-            'cred':token_id,
-            'continue':'otp_check'
-            }
-        )
+    digits = {'cr%s'%d:c for d,c in enumerate(otp, 1)}
+    token_check = session.post(TEST_URL, data={'cred':token_id, 'continue':'otp_check', **digits})
     if "Your VIP Credential is working correctly" in token_check.text:
         return True
     elif "Your VIP credential needs to be sync" in token_check.text:
