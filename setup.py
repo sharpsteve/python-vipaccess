@@ -29,9 +29,10 @@ setup(
     keywords='development',
     packages=['vipaccess'],
     install_requires=[
-        'lxml==4.2.5',
+        # verify consistency with requirements.txt
+        'lxml>=3.5',
+        'pycryptodome>=3.6.6',
         'oath>=1.4.1',
-        'pycryptodome==3.6.6',
         'requests',
     ],
     entry_points={
