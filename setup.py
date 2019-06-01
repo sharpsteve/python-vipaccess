@@ -1,17 +1,17 @@
 from setuptools import setup
 from io import open
 
-with open('README.md', encoding='utf-8') as f:
-    readme = f.read()
+with open('description.rst', encoding='utf-8') as f:
+    description = f.read()
 
 setup(
     name='python-vipaccess',
-    version='0.10',
+    version='0.10.1',
     description="A free software implementation of Symantec's VIP Access application and protocol",
-    long_description=readme,
-    url='https://github.com/cyrozap/python-vipaccess',
-    author='Forest Crossman',
-    author_email='cyrozap@gmail.com',
+    long_description=description,
+    url='https://github.com/dlenski/python-vipaccess',
+    author='Daniel Lenski',
+    author_email='dlenski@gmail.com',
     license='Apache 2.0',
     classifiers=[
         'Development Status :: 3 - Alpha',

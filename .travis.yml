@@ -24,3 +24,12 @@ script:
 
 after_success:
   - coveralls
+
+deploy:
+  provider: pypi
+  user: moxfyre
+  password:
+    secure: XpjuW77IvYq05IYQTZQj1kkuqdinsjMuYZUSGG5u0lkezY7l5kIvlHBCr2i1ipiTaT5qvTukBy55DVjv+1eRVBt2k9iIsJ66ZT9xwDaKwnuXNiW+vKYyog+HXwvn5gWzFX1Le5GHT6gmovhd76azmnK/FJOZlPl59X/rItzHCjs=
+  on:
+    tags: true
+    repo: dlenski/python-vipaccess
