@@ -13,7 +13,6 @@ Table of Contents
    * [Intro](#intro)
    * [Dependencies](#dependencies)
    * [Installation](#installation)
-      * [Docker](#docker)
    * [Usage](#usage)
       * [Provisioning a new VIP Access credential](#provisioning-a-new-vip-access-credential)
       * [Display a QR code to register your credential with mobile TOTP apps](#display-a-qr-code-to-register-your-credential-with-mobile-totp-apps)
@@ -23,7 +22,7 @@ This is a fork of [**`cyrozap/python-vipaccess`**](https://github.com/dlenski/py
 
 - No dependency on `qrcode` or `image` libraries; you can easily use
   external tools such as [`qrencode`](https://github.com/fukuchi/libqrencode)
-  to convert an `otpauth://` URL to a QR code if needed, so it seems
+  to convert an `otpauth://` URI to a QR code if needed, so it seems
   unnecessary to build in this functionality.
 - Option to generate either the desktop (`VSST`) or mobile (`VSMT`)
   version on the VIP Access tokens; as far as I can tell there is no
@@ -61,59 +60,35 @@ new token.
 Dependencies
 ------------
 
--  Python 2.7 or 3.3+
+-  Python 3.3+ (recommended) or 2.7 (not recommended)
 -  [`lxml`](https://pypi.python.org/pypi/lxml/4.2.5)
 -  [`oath`](https://pypi.python.org/pypi/oath/1.4.1)
 -  [`pycryptodome`](https://pypi.python.org/pypi/pycryptodome/3.6.6)
 -  [`requests`](https://pypi.python.org/pypi/requests)
 
-If you have `pip` installed on your system, you can easily install the dependencies by running
-`pip install -r requirements.txt` in the project root directory.
+For development purposes, you can install the dependencies with `pip install -r requirements.txt` in 
+the project root directory.
 
 To install `pip` see the [`pip` installation documentation](https://pip.pypa.io/en/stable/installing/).
 
 Installation
 ------------
 
-Install with `pip3` to automatically fetch Python dependencies. (Note that on most systems, `pip3` invokes
-the Python 3.x version, while `pip` invokes the Python 2.7 version; Python 2.7 is still supported, but not
-recommended because it's nearing obsolescence.)
+Install with [`pip3`](https://pip.pypa.io/en/stable/installing/) to automatically fetch Python
+dependencies. (Note that on most systems, `pip3` invokes the Python 3.x version, while `pip` invokes
+the Python 2.7 version; Python 2.7 is still supported, but not recommended because it's nearing
+obsolescence.)
 
 ```
-# Install latest development version
+# Install latest release from PyPI
+$ pip3 install python-vipaccess
+
+# Install latest development version from GitHub
 $ pip3 install https://github.com/dlenski/python-vipaccess/archive/HEAD.zip
-
-# Install a tagged release
-# (replace "RELEASE" with one of the tag/release version numbers on the "Releases" page)
-$ pip3 install https://github.com/dlenski/python-vipaccess/archive/RELEASE.zip
-```
-
-### Docker
-
-If you have Docker installed, you can use
-[this prebuilt Docker image](https://hub.docker.com/r/kayvan/vipaccess/) to run
-the `vipaccess` tool:
-
-```
-docker run --rm kayvan/vipaccess provision -p -t VSST
-Credential created successfully:
-	otpauth://totp/VIP%20Access:VSST1113377?secret=YOURSECRET&issuer=Symantec
-This credential expires on this date: 2020-06-05T15:26:26.585Z
-
-You will need the ID to register this credential: VSST1113377
-```
-
-And with your generated secret, use the `show` command like this:
-
-```
-docker run --rm kayvan/vipaccess show -s YOURSECRET
-935163
 ```
 
 Usage
 -----
-
-(This section covers the expanded CLI options of this fork, rather than [@cyrozap](https://github.com/cyrozap)'s original version.)
 
 ### Provisioning a new VIP Access credential
 
@@ -144,7 +119,7 @@ Here is an example of the output from `vipaccess provision -p`:
 
 ```
 Credential created successfully:
-	otpauth://totp/VIP%20Access:VSST12345678?secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&issuer=Symantec
+	otpauth://totp/VIP%20Access:VSST12345678?secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&issuer=Symantec&algorithm=SHA1&digits=6
 This credential expires on this date: 2019-01-15T12:00:00.000Z
 
 You will need the ID to register this credential: VSST12345678
@@ -169,12 +144,11 @@ expiry 2019-01-15T12:00:00.000Z
 
 ### Display a QR code to register your credential with mobile TOTP apps
 
-Once you generate a token with `vipaccess provision -p`, use
-[`qrencode`](https://fukuchi.org/works/qrencode/manual/index.html) to display
-the `otpauth://` URL as a QR code:
+Once you generate a token with `vipaccess provision`, use `vipaccess uri` to show the `otpaath://` URI and
+[`qrencode`](https://fukuchi.org/works/qrencode/manual/index.html) to display that URI as a QR code:
 
 ```
-qrencode -t ANSI256 'otpauth://totp/VIP%20Access:VSSTXXXX?secret=YYYY&issuer=Symantec'
+$ qrencode -t UTF8 'otpauth://totp/VIP%20Access:VSSTXXXX?secret=YYYY&issuer=Symantec&algorithm=SHA1&digits=6'
 ```
 
 Scan the code into your TOTP generating app,
