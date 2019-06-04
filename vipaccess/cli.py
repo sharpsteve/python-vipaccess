@@ -64,14 +64,14 @@ def provision(p, args):
         print('Credential created successfully:\n\t' + otp_uri)
         print("This credential expires on this date: " + otp_token['expiry'])
         print('\nYou will need the ID to register this credential: ' + otp_token['id'])
-        print('\nYou can use oathtool to generate the same OTP codes')
-        print('as would be produced by the official VIP Access apps:\n')
-        print('    oathtool -d6 -b --totp    {}  # 6-digit code'''.format(otp_secret_b32))
-        print('    oathtool -d6 -b --totp -v {}  # ... with extra information'''.format(otp_secret_b32))
-    else:
-        assert otp_token['digits']==6
-        assert otp_token['algorithm']=='sha1'
-        assert otp_token['period']==30
+        if otp_token['period'] is not None and otp_token['counter'] is None:
+            print('\nYou can use oathtool to generate the same OTP codes')
+            print('as would be produced by the official VIP Access apps:\n')
+            d = '-d{} '.format(otp_token['digits']) if otp_token['digits']!=6 else ''
+            s = '-s{} '.format(otp_token['period']) if otp_token['period']!=30 else ''
+            print('    oathtool    {}{}-b --totp {}  # output one code'''.format(d, s, otp_secret_b32))
+            print('    oathtool -v {}{}-b --totp {}  # ... with extra information'''.format(d, s, otp_secret_b32))
+    elif otp_token['digits']==6 and otp_token['algorithm']=='sha1' and otp_token['period']==30:
         os.umask(0o077) # stoken does this too (security)
         with open(os.path.expanduser(args.dotfile), EXCL_WRITE) as dotfile:
             dotfile.write('version 1\n')
@@ -80,6 +80,8 @@ def provision(p, args):
             dotfile.write('expiry %s\n' % otp_token['expiry'])
         print('Credential created and saved successfully: ' + dotfile.name)
         print('You will need the ID to register this credential: ' + otp_token['id'])
+    else:
+        p.error('Cannot currently save a token of this type (try -p to print)')
 
 def uri(p, args):
     if args.secret:

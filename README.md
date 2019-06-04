@@ -127,8 +127,8 @@ You will need the ID to register this credential: VSST12345678
 You can use oathtool to generate the same OTP codes
 as would be produced by the official VIP Access apps:
 
-    oathtool -d6 -b --totp    AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA  # 6-digit code
-    oathtool -d6 -b --totp -v AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA  # ... with extra information
+    oathtool    -b --totp AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA  # output one code
+    oathtool -v -b --totp AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA  # ... with extra information
 ```
 
 Here is the format of the `.vipaccess` token file output from
