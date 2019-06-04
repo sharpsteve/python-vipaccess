@@ -34,7 +34,7 @@ import requests
 from Crypto.Cipher import AES
 from Crypto.Random import random
 from lxml import etree
-from oath import totp
+from oath import totp, hotp
 
 
 PROVISIONING_URL = 'https://services.vip.symantec.com/prov'
@@ -139,7 +139,10 @@ def get_token_from_response(response_xml):
         token['cipher'] = base64.b64decode(data.find('v:Cipher', ns).text)
         token['digest'] = base64.b64decode(data.find('v:Digest', ns).text)
         token['expiry'] = expiry.text
-        token['period'] = int(usage.find('v:TimeStep', ns).text)
+        ts = usage.find('v:TimeStep', ns) # TOTP only
+        token['period'] = int(ts.text) if ts is not None else None
+        ct = usage.find('v:Counter', ns) # HOTP ony
+        token['counter'] = int(ct.text) if ct is not None else None
 
         algorithm = usage.find('v:AI', ns).attrib['type'].split('-')
         if len(algorithm)==4 and algorithm[0]=='HMAC' and algorithm[2]=='TRUNC' and algorithm[3].endswith('DIGITS'):
@@ -167,30 +170,43 @@ def decrypt_key(token_iv, token_cipher):
 def generate_otp_uri(token, secret, issuer='Symantec'):
     '''Generate the OTP URI.'''
     token_parameters = {}
-    token_parameters['otp_type'] = urllib.quote('totp')
     token_parameters['app_name'] = urllib.quote('VIP Access')
     token_parameters['account_name'] = urllib.quote(token.get('id', 'Unknown'))
     secret = base64.b32encode(secret).upper()
-    token_parameters['parameters'] = urllib.urlencode(
-        dict(
-            secret=secret,
-            digits=token.get('digits', 6),
-            period=token.get('period', 30),
-            algorithm=token.get('algorithm', 'SHA1').upper(),
-            issuer=issuer
-            )
-        )
-
+    data = dict(
+        secret=secret,
+        digits=token.get('digits', 6),
+        algorithm=token.get('algorithm', 'SHA1').upper(),
+        issuer=issuer,
+    )
+    if token.get('counter') is not None: # HOTP
+        data['counter'] = token['counter']
+        token_parameters['otp_type'] = urllib.quote('hotp')
+    elif token.get('period'): # TOTP
+        data['period'] = token['period']
+        token_parameters['otp_type'] = urllib.quote('totp')
+    else: # Assume TOTP with default period 30 (FIXME)
+        data['period'] = 30
+        token_parameters['otp_type'] = urllib.quote('totp')
+    token_parameters['parameters'] = urllib.urlencode(data)
     return 'otpauth://%(otp_type)s/%(app_name)s:%(account_name)s?%(parameters)s' % token_parameters
 
-def check_token(token_id, secret, session=requests):
+def check_token(token, secret, session=requests):
     '''Check the validity of the generated token.'''
-    otp = totp(binascii.b2a_hex(secret).decode('utf-8'))
+    secret_b32 = binascii.b2a_hex(secret).decode('ascii')
+    if token.get('counter') is not None: # HOTP
+        otp = hotp(secret_b32, counter=token['counter'])
+    elif token.get('period'): # TOTP
+        otp = totp(secret_b32, period=token['period'])
+    else: # Assume TOTP with default period 30 (FIXME)
+        otp = totp(secret_b32)
     data = {'cr%s'%d:c for d,c in enumerate(otp, 1)}
-    data['cred'] = token_id
+    data['cred'] = token['id']
     data['continue'] = 'otp_check'
     token_check = session.post(TEST_URL, data=data)
     if "Your VIP Credential is working correctly" in token_check.text:
+        if token.get('counter') is not None:
+            token['counter'] += 1
         return True
     elif "Your VIP credential needs to be sync" in token_check.text:
         return False

@@ -54,7 +54,7 @@ def provision(p, args):
     otp_secret = vp.decrypt_key(otp_token['iv'], otp_token['cipher'])
     otp_secret_b32 = base64.b32encode(otp_secret).upper().decode('ascii')
     print("Checking token...")
-    if not vp.check_token(otp_token['id'], otp_secret, session):
+    if not vp.check_token(otp_token, otp_secret, session):
         print("WARNING: Something went wrong--the token could not be validated.\n",
               "    (check your system time; it differs from the server's by %d seconds)\n" % otp_token['timeskew'],
               file=sys.stderr)
