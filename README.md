@@ -144,7 +144,7 @@ expiry 2019-01-15T12:00:00.000Z
 
 ### Display a QR code to register your credential with mobile TOTP apps
 
-Once you generate a token with `vipaccess provision`, use `vipaccess uri` to show the `otpaath://` URI and
+Once you generate a token with `vipaccess provision`, use `vipaccess uri` to show the `otpauth://` URI and
 [`qrencode`](https://fukuchi.org/works/qrencode/manual/index.html) to display that URI as a QR code:
 
 ```
