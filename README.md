@@ -61,7 +61,6 @@ Dependencies
 ------------
 
 -  Python 3.3+ (recommended) or 2.7 (not recommended)
--  [`lxml`](https://pypi.python.org/pypi/lxml/4.2.5)
 -  [`oath`](https://pypi.python.org/pypi/oath/1.4.1)
 -  [`pycryptodome`](https://pypi.python.org/pypi/pycryptodome/3.6.6)
 -  [`requests`](https://pypi.python.org/pypi/requests)
