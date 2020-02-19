@@ -30,7 +30,6 @@ setup(
     packages=['vipaccess'],
     install_requires=[
         # verify consistency with requirements.txt
-        'lxml>=3.5',
         'pycryptodome>=3.6.6',
         'oath>=1.4.1',
         'requests',
@@ -40,5 +39,8 @@ setup(
             'vipaccess=vipaccess.cli:main',
         ],
     },
+    test_requires=[
+        'nose>=1.0',
+    ],
     test_suite='nose.collector',
 )

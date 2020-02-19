@@ -33,7 +33,7 @@ except ImportError:
 import requests
 from Crypto.Cipher import AES
 from Crypto.Random import random
-from lxml import etree
+import xml.etree.ElementTree as etree
 from oath import totp, hotp
 
 
@@ -113,7 +113,7 @@ def get_provisioning_response(request, session=requests):
 def get_token_from_response(response_xml):
     '''Retrieve relevant token details from Symantec's provisioning
     response.'''
-    # Define an arbitrary namespace "vipservice" because lxml doesn't like it
+    # Define an arbitrary namespace "v" because etree doesn't like it
     # when it's "None"
     ns = {'v':'http://www.verisign.com/2006/08/vipservice'}
 
