@@ -85,8 +85,10 @@ def provision(p, args):
 
 def uri(p, args):
     if args.secret:
-        d, secret = {}, args.secret
+        d, secret = {'id': args.identity or 'Unknown'}, args.secret
     else:
+        if not os.path.exists(args.dotfile):
+            p.error("File %s does not exist." % args.dotfile)
         with open(args.dotfile, "r") as dotfile:
             d = dict( l.strip().split(None, 1) for l in dotfile )
         if 'version' not in d:
@@ -157,7 +159,7 @@ def main():
     m = pshow.add_mutually_exclusive_group()
     m.add_argument('-s', '--secret', action=UnsetDotfileAndStore, nargs=1,
                    help="Specify the token secret on the command line (base32 encoded)")
-    m.add_argument('-f', '--dotfile', type=PathType(exists=True), default=os.path.expanduser('~/.vipaccess'),
+    m.add_argument('-f', '--dotfile', type=PathType(type='file', exists=True), default=os.path.expanduser('~/.vipaccess'),
                    help="File in which the credential is stored (default ~/.vipaccess)")
     pshow.add_argument('-v', '--verbose', action='store_true')
     pshow.set_defaults(func=show)
@@ -166,10 +168,12 @@ def main():
     m = puri.add_mutually_exclusive_group()
     m.add_argument('-s', '--secret',  action=UnsetDotfileAndStore, nargs=1,
                    help="Specify the token secret on the command line (base32 encoded)")
-    m.add_argument('-f', '--dotfile', type=PathType(exists=True), default=os.path.expanduser('~/.vipaccess'),
+    m.add_argument('-f', '--dotfile', type=PathType(type='file', exists=True), default=os.path.expanduser('~/.vipaccess'),
                    help="File in which the credential is stored (default ~/.vipaccess)")
     puri.add_argument('-i', '--issuer', default="Symantec", action='store',
                        help="Specify the issuer name to use (default: Symantec)")
+    puri.add_argument('-I', '--identity', action='store',
+                       help="Specify the ID of the token to use (required with --secret))")
     puri.set_defaults(func=uri)
 
     p.set_default_subparser('show')
