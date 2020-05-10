@@ -65,7 +65,7 @@ Dependencies
 -  [`pycryptodome`](https://pypi.python.org/pypi/pycryptodome/3.6.6)
 -  [`requests`](https://pypi.python.org/pypi/requests)
 
-For development purposes, you can install the dependencies with `pip install -r requirements.txt` in 
+For development purposes, you can install the dependencies with `pip install -r requirements.txt` in
 the project root directory.
 
 To install `pip` see the [`pip` installation documentation](https://pip.pypa.io/en/stable/installing/).
@@ -106,10 +106,12 @@ optional arguments:
   -o DOTFILE, --dotfile DOTFILE
                         File in which to store the new credential (default
                         ~/.vipaccess)
+  -i ISSUER, --issuer ISSUER
+                        Specify the issuer name to use (default: Symantec)
   -t TOKEN_MODEL, --token-model TOKEN_MODEL
-                        VIP Access token model. Normally VSST (desktop token,
-                        default) or VSMT (mobile token). Some clients only
-                        accept one or the other. Other more obscure token
+                        VIP Access token model. Often VSST (desktop token,
+                        default) or VSMT (mobile token) or SYMC. Some clients
+                        only accept one or the other. Other more obscure token
                         types also exist:
                         https://support.symantec.com/en_US/article.TECH239895.html
 ```

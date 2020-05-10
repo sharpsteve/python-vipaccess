@@ -192,7 +192,7 @@ def main():
     pprov.add_argument('-i', '--issuer', default="Symantec", action='store',
                        help="Specify the issuer name to use (default: Symantec)")
     pprov.add_argument('-t', '--token-model', default='VSST',
-                      help="VIP Access token model. Normally VSST (desktop token, default) or VSMT (mobile token). "
+                      help="VIP Access token model. Often VSST (desktop token, default) or VSMT (mobile token) or SYMC. "
                            "Some clients only accept one or the other. Other more obscure token types also exist: "
                            "https://support.symantec.com/en_US/article.TECH239895.html")
 
