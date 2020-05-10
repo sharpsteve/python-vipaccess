@@ -131,17 +131,18 @@ def show(p, args):
 def main():
     p = argparse.ArgumentParser()
 
-    class PrintAction(argparse.Action):
+    class UnsetDotfileAndStore(argparse.Action):
         def __call__(self, parser, namespace, values, option_string=None):
-            setattr(namespace, 'print', True)
+            # We need to unset dotfile so that PathType() doesn't try to check for its existence/nonexistence
             setattr(namespace, 'dotfile', None)
+            setattr(namespace, self.dest, True if not values else values[0] if len(values)==1 else values)
 
     sp = p.add_subparsers(dest='cmd')
 
     pprov = sp.add_parser('provision', help='Provision a new VIP Access credential')
     pprov.set_defaults(func=provision)
     m = pprov.add_mutually_exclusive_group()
-    m.add_argument('-p', '--print', action=PrintAction, nargs=0,
+    m.add_argument('-p', '--print', action=UnsetDotfileAndStore, nargs=0,
                    help="Print the new credential, but don't save it to a file")
     m.add_argument('-o', '--dotfile', type=PathType(type='file', exists=False), default=os.path.expanduser('~/.vipaccess'),
                    help="File in which to store the new credential (default ~/.vipaccess)")
@@ -154,7 +155,7 @@ def main():
 
     pshow = sp.add_parser('show', help="Show the current 6-digit token")
     m = pshow.add_mutually_exclusive_group()
-    m.add_argument('-s', '--secret',
+    m.add_argument('-s', '--secret', action=UnsetDotfileAndStore, nargs=1,
                    help="Specify the token secret on the command line (base32 encoded)")
     m.add_argument('-f', '--dotfile', type=PathType(exists=True), default=os.path.expanduser('~/.vipaccess'),
                    help="File in which the credential is stored (default ~/.vipaccess)")
@@ -163,7 +164,7 @@ def main():
 
     puri = sp.add_parser('uri', help="Export the credential as a URI (otpauth://)")
     m = puri.add_mutually_exclusive_group()
-    m.add_argument('-s', '--secret',
+    m.add_argument('-s', '--secret',  action=UnsetDotfileAndStore, nargs=1,
                    help="Specify the token secret on the command line (base32 encoded)")
     m.add_argument('-f', '--dotfile', type=PathType(exists=True), default=os.path.expanduser('~/.vipaccess'),
                    help="File in which the credential is stored (default ~/.vipaccess)")
