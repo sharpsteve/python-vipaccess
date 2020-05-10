@@ -3,6 +3,7 @@ from __future__ import print_function
 import os, sys
 import argparse
 import oath
+import time
 import base64
 from vipaccess.patharg import PathType
 from vipaccess import provision as vp
@@ -83,6 +84,46 @@ def provision(p, args):
     else:
         p.error('Cannot currently save a token of this type (try -p to print)')
 
+def check(p, args):
+    if args.secret:
+        d, secret = {'id': args.identity or 'Unknown'}, args.secret
+    else:
+        with open(args.dotfile, "r") as dotfile:
+            d = dict( l.strip().split(None, 1) for l in dotfile )
+        if 'version' not in d:
+            p.error('%s does not specify version' % args.dotfile)
+        elif d['version'] != '1':
+            p.error("%s specifies version %r, rather than expected '1'" % (args.dotfile, d['version']))
+        elif 'secret' not in d:
+            p.error('%s does not specify secret' % args.dotfile)
+        secret = d['secret']
+
+    if not args.identity:
+        p.error("Token identity unknown; specify with -I/--identity")
+
+    try:
+        key = oath.google_authenticator.lenient_b32decode(secret)
+    except Exception as e:
+        p.error('error interpreting secret as base32: %s' % e)
+
+    d.setdefault('period', 30)
+
+    print("Checking token...")
+    session = vp.requests.Session()
+    for skew in (None, +d['period']//2, -d['period']//2, +d['period'], -d['period'], +d['period']*3//2, -d['period']*3//2):
+        if skew is None:
+            if vp.check_token(d, key, session):
+                print("Token is valid and working.")
+                break
+        else:
+            print("Trying %+d seconds timeskew..." % skew)
+            if vp.check_token(d, key, session, timestamp=time.time()+skew):
+                print("Token is valid and working, but we had to skew by %+d seconds (check your system time)\n" % skew)
+                break
+    else:
+        print("WARNING: Something went wrong--the token could not be validated.\n",
+              file=sys.stderr)
+
 def uri(p, args):
     if args.secret:
         d, secret = {'id': args.identity or 'Unknown'}, args.secret
@@ -154,6 +195,16 @@ def main():
                       help="VIP Access token model. Normally VSST (desktop token, default) or VSMT (mobile token). "
                            "Some clients only accept one or the other. Other more obscure token types also exist: "
                            "https://support.symantec.com/en_US/article.TECH239895.html")
+
+    pcheck = sp.add_parser('check', help='Check if a VIP Access credential is working')
+    m = pcheck.add_mutually_exclusive_group()
+    m.add_argument('-f', '--dotfile', type=PathType(type='file', exists=True), default=os.path.expanduser('~/.vipaccess'),
+                   help="File in which the credential is stored (default ~/.vipaccess)")
+    m.add_argument('-s', '--secret', action=UnsetDotfileAndStore, nargs=1,
+                   help="Specify the token secret to test (base32 encoded)")
+    pcheck.add_argument('-I', '--identity',
+                       help="Specify the ID of the token to test (normally starts with VS or SYMC)")
+    pcheck.set_defaults(func=check)
 
     pshow = sp.add_parser('show', help="Show the current 6-digit token")
     m = pshow.add_mutually_exclusive_group()
