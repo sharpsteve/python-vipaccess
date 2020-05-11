@@ -91,8 +91,9 @@ Usage
 
 ### Provisioning a new VIP Access credential
 
-This is used to create a new VIP Access token: by default, it stores
-the new credential in the file `.vipaccess` in your home directory (in a
+This is used to create a new VIP Access token. It connects to symantec.com
+and requests a new token. By default it stores
+the new token in the file `.vipaccess` in your home directory (in a
 format similar to `stoken`), but it can store to another file instead,
 or instead just print out the "token secret" string with instructions
 about how to use it.
