@@ -29,7 +29,7 @@ This is a fork of [**`cyrozap/python-vipaccess`**](https://github.com/dlenski/py
   real difference between them, but some clients require one or the
   other specifically. There are also some rarer token types/prefixes
   which can be generated if necessary
-  ([reference list from Symantec](https://support.symantec.com/us/en/article.tech239895.html)
+  ([reference list from Symantec](https://support.symantec.com/us/en/article.tech239895.html))
 - Command-line utility is expanded to support *both* token
   provisioning (creating a new token) and emitting codes for an
   existing token (inspired by the command-line interface of
@@ -39,7 +39,7 @@ Intro
 -----
 
 python-vipaccess is a free and open source software (FOSS)
-implementation of Symantec's VIP Access client.
+implementation of Symantec's VIP Access client (now owned by Broadcom).
 
 If you need to access a network which uses VIP Access for [two-factor
 authentication](https://en.wikipedia.org/wiki/Two-factor_authentication),
@@ -122,6 +122,11 @@ optional arguments:
 Here is an example of the output from `vipaccess provision -p`:
 
 ```
+Generating request...
+Fetching provisioning response from Symantec server...
+Getting token from response...
+Decrypting token...
+Checking token against Symantec server...
 Credential created successfully:
 	otpauth://totp/VIP%20Access:VSST12345678?secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&issuer=Symantec&algorithm=SHA1&digits=6
 This credential expires on this date: 2019-01-15T12:00:00.000Z
