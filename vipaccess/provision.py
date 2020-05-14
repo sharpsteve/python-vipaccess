@@ -119,8 +119,11 @@ def get_token_from_response(response_xml):
 
     tree = etree.fromstring(response_xml)
     result = tree.find('v:Status/v:StatusMessage', ns).text
+    reasoncode = tree.find('v:Status/v:ReasonCode', ns).text
 
-    if result == 'Success':
+    if result != 'Success':
+        raise RuntimeError(result, reasoncode)
+    else:
         token = {}
         token['timeskew'] = time.time() - int(tree.find('v:UTCTimestamp', ns).text)
         container = tree.find('v:SecretContainer', ns)
