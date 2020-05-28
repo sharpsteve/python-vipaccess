@@ -1,9 +1,8 @@
 | **IMPORTANT!** |
 | -------------- |
-| As of May 17, 2020, `python-vipaccess` no longer works for provisioning new Symantec VIP Access tokens (which was its raison d'être).|
-| This is because it relies on identifying itself as a MacOS client which was [reverse-engineered in 2014](https://www.cyrozap.com/2014/09/29/reversing-the-symantec-vip-access-provisioning-protocol/), by [@cyrozap](https://github.com/cyrozap), and using the secret encryption and HMAC keys extracted from that version of the client.|
-| The Symantec servers no longer accept this client as legitimate for provisioning new tokens. | 
-| Provisioning new tokens **will not be possible** unless and until someone can replicate the complex reverse-engineering feat by extracting secret keys from a more recent officially-supported Symantec client. See [issue 39](https://github.com/dlenski/python-vipaccess/issues/39) for more details. |
+| As of May 17, 2020, `python-vipaccess` stopped working for provisioning new Symantec VIP Access tokens (which was its raison d'être). |
+| As of May 27, 2020, it's working again. |
+| It might stop working again. and we might not be able to get it to work again [(see #39)](https://github.com/dlenski/python-vipaccess/issues/39#issuecomment-628741743) |
 
 python-vipaccess
 ================
