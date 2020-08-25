@@ -57,6 +57,7 @@ def test_get_token_from_response():
         'period': 30,
         'algorithm': 'sha1',
         'digits': 6,
+        'counter': None,
     }
     token = get_token_from_response(test_response)
     assert token.pop('timeskew', None) is not None
@@ -69,7 +70,7 @@ def test_decrypt_key():
     decrypted_key = decrypt_key(test_iv, test_cipher)
     assert decrypted_key == expected_key
 
-def test_generate_otp_uri():
+def test_generate_totp_uri():
     test_token = {
         'salt': b'\xbb\x99`\x7fQ$\xf1`4\x8a"0VH\xf2\xdb\xa8\xfa\xa5\xf9',
         'iteration_count': 50,
@@ -78,6 +79,7 @@ def test_generate_otp_uri():
         'cipher': b' \xb0px\xe0\x84:\x83\x01,\x90\x11\xce\x87\x94"[\xb4\xfb\x99\xbaoy!fX\xdd\xe5\xda3\x01\x19',
         'digest': b'2\x86\xa2un\xd7\x0f7\x93d\x9a\xa1}\x14\x02dH\x9e\x01\x13',
         'expiry': '2017-09-25T23:36:22.056Z',
+        'counter': None,
         'period': 30,
         'algorithm': 'sha1',
         'digits': 6,
@@ -92,15 +94,46 @@ def test_generate_otp_uri():
     assert urlparse.parse_qs(generated_uri.params) == urlparse.parse_qs(expected_uri.params)
     assert urlparse.parse_qs(generated_uri.query) == urlparse.parse_qs(expected_uri.query)
 
-def test_check_token_detects_valid_token():
+def test_generate_hotp_uri():
+    test_token = {
+        'salt': b'1\x92\xef\xb5\x99\xaf\xa9\xe3)\x17\xaf \x9b\xa5\x95j7\xe7\xa9+',
+        'iteration_count': 50,
+        'iv': b'Q\xf6I\xb3\xc9!\xfd3\xc64\x8ae\x83\x8d\x9c\xaf',
+        'id': 'UBHE57586348',
+        'cipher': b"!\x90)]e\x12\xe6\xcf\xa9\xd3\xa7\xaf\xdf\xb0\x89\x1f~\xe6\x17\xe7'\xd7pU\xcd>x\xf7\xc1\xc22\xe1"    ,
+        'digest': b'\xc3sA\xe9\x02\\\xff\x02m\x1d\xb5i\x1a\xb7\xdc\x85&yl\xcd',
+        'expiry': '2022-06-03T07:21:46.825Z',
+        'period': None,
+        'counter': 1,
+        'algorithm': 'sha1',
+        'digits': 6,
+        'timeskew': 0,
+    }
+    test_secret = b'\x9a\x13\xcd2!\xad\xbd\x97R\xfcEE\xb6\x92e\xb4\x14\xb0\xfem'
+    expected_uri = urlparse.urlparse('otpauth://hotp/VIP%20Access:UBHE57586348?digits=6&algorithm=SHA1&counter=1&issuer=Symantec&secret=TIJ42MRBVW6ZOUX4IVC3NETFWQKLB7TN')
+    generated_uri = urlparse.urlparse(generate_otp_uri(test_token, test_secret))
+    assert generated_uri.scheme == expected_uri.scheme
+    assert generated_uri.netloc == expected_uri.netloc
+    assert generated_uri.path == expected_uri.path
+    assert urlparse.parse_qs(generated_uri.params) == urlparse.parse_qs(expected_uri.params)
+    print(expected_uri, generated_uri)
+    assert urlparse.parse_qs(generated_uri.query) == urlparse.parse_qs(expected_uri.query)
+
+def test_check_token_detects_valid_totp_token():
     test_request = generate_request()
     test_response = requests.post(PROVISIONING_URL, data=test_request)
     test_otp_token = get_token_from_response(test_response.content)
-    test_token_id = test_otp_token['id']
     test_token_secret = decrypt_key(test_otp_token['iv'], test_otp_token['cipher'])
-    assert check_token(test_token_id, test_token_secret)
+    assert check_token(test_otp_token, test_token_secret)
+
+def test_check_token_detects_valid_hotp_token():
+    test_request = generate_request(token_model='UBHE')
+    test_response = requests.post(PROVISIONING_URL, data=test_request)
+    test_otp_token = get_token_from_response(test_response.content)
+    test_token_secret = decrypt_key(test_otp_token['iv'], test_otp_token['cipher'])
+    assert check_token(test_otp_token, test_token_secret)
 
 def test_check_token_detects_invalid_token():
-    test_token_id = 'VSST26070843'
+    test_token = {'id': 'VSST26070843', 'period': 30}
     test_token_secret = b'ZqeD\xd9wg]"\x12\x1f7\xc7v6"\xf0\x13\\i'
-    assert not check_token(test_token_id, test_token_secret)
+    assert not check_token(test_token, test_token_secret)
